@@ -1,5 +1,6 @@
 ﻿<!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -526,12 +527,23 @@
     }
 
     @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-4px); }
-      75% { transform: translateX(4px); }
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      25% {
+        transform: translateX(-4px);
+      }
+
+      75% {
+        transform: translateX(4px);
+      }
     }
 
     @media (max-width: 1050px) {
+
       .topbar,
       .board {
         grid-template-columns: 1fr;
@@ -598,6 +610,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="app">
     <header class="topbar">
@@ -614,25 +627,31 @@
       <div class="toolbar" aria-label="Acciones">
         <button class="tool-button primary" id="randomize" type="button" title="Reparto aleatorio">
           <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M16 3h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M16 3h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round"></path>
             <path d="M4 20 21 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-            <path d="M21 16v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M15 15 21 21M4 4l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M21 16v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round"></path>
+            <path d="M15 15 21 21M4 4l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            </path>
           </svg>
           Azar
         </button>
         <button class="tool-button" id="clearBoard" type="button" title="Vaciar habitaciones">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
-            <path d="M8 6V4h8v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M6 6l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M8 6V4h8v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round"></path>
+            <path d="M6 6l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
           Vaciar
         </button>
         <button class="tool-button" id="copyBoard" type="button" title="Copiar reparto">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round"></path>
           </svg>
           Copiar
         </button>
@@ -677,7 +696,7 @@
       { id: "barbara-jose", kind: "Pareja", size: 2, title: "Bárbara & José", accent: "#0f766e", fill: "#dff2ef" },
       { id: "isabel-eloy", kind: "Pareja", size: 2, title: "Isabel & Eloy", accent: "#b45309", fill: "#fff0df" },
       { id: "lucia-dani", kind: "Pareja", size: 2, title: "Lucia & Dani", accent: "#2f5f9d", fill: "#e6efff" },
-      { id: "juancarlos-jcp", kind: "Pareja", size: 2, title: "JuanCarlos & JCP", accent: "#947000", fill: "#fff5ca" },
+      { id: "juancarlos-jcp", kind: "Pareja", size: 2, title: "Juan Carlos & Laura", accent: "#947000", fill: "#fff5ca" },
       { id: "jaime-vicky", kind: "Pareja", size: 2, title: "Jaime y Vicky", accent: "#7c4d93", fill: "#f1e8ff" },
       { id: "miko", kind: "Individual", size: 1, title: "Miko", accent: "#9f3a38", fill: "#ffe8e6" },
       { id: "antonio", kind: "Individual", size: 1, title: "Antonio", accent: "#4e7d3b", fill: "#e8f3df" },
@@ -1117,9 +1136,5 @@
     }
   </script>
 </body>
+
 </html>
-
-
-
-
-
