@@ -1,0 +1,1125 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Puzzle de habitaciones</title>
+  <style>
+    :root {
+      --bg: #eef3f1;
+      --table: #dce8e4;
+      --surface: #ffffff;
+      --surface-2: #f4f7f6;
+      --ink: #202724;
+      --muted: #69736e;
+      --line: #cbd8d4;
+      --line-strong: #95aaa3;
+      --teal: #0f766e;
+      --teal-soft: #dff2ef;
+      --red: #a23f3a;
+      --shadow: 0 18px 42px rgba(22, 44, 39, 0.14);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        linear-gradient(90deg, rgba(15, 118, 110, 0.06) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(32, 39, 36, 0.04) 1px, transparent 1px),
+        var(--table);
+      background-size: 34px 34px, 34px 34px, auto;
+    }
+
+    button {
+      border: 0;
+      font: inherit;
+      letter-spacing: 0;
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    .piece:focus-visible,
+    .room:focus-visible,
+    .tray-drop:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, 0.35);
+      outline-offset: 2px;
+    }
+
+    svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 28px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+      max-width: 1500px;
+      margin: 0 auto 18px;
+    }
+
+    .title-block {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .mark {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      width: 70px;
+      min-width: 70px;
+      height: 46px;
+      padding: 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: 0 10px 22px rgba(45, 38, 27, 0.1);
+    }
+
+    .mark span {
+      border-radius: 5px;
+      background: var(--teal);
+    }
+
+    .mark span:nth-child(1),
+    .mark span:nth-child(2) {
+      background: #b45309;
+    }
+
+    .mark span:nth-child(3) {
+      background: #2f5f9d;
+    }
+
+    .mark span:nth-child(4) {
+      background: #947000;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      font-size: clamp(1.55rem, 3vw, 2.65rem);
+      line-height: 1;
+      font-weight: 840;
+    }
+
+    .title-block p,
+    .muted {
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .tool-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--ink);
+      padding: 0 13px;
+      font-weight: 750;
+      box-shadow: 0 8px 18px rgba(45, 38, 27, 0.08);
+    }
+
+    .tool-button.primary {
+      border-color: #0d5f59;
+      background: var(--teal);
+      color: white;
+    }
+
+    .tool-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px rgba(45, 38, 27, 0.13);
+    }
+
+    .tool-button:active {
+      transform: translateY(0);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 10px;
+      max-width: 1500px;
+      margin: 0 auto 18px;
+    }
+
+    .stat {
+      min-height: 82px;
+      border: 1px solid rgba(182, 168, 148, 0.72);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 248, 0.88);
+      padding: 13px;
+      box-shadow: 0 8px 18px rgba(45, 38, 27, 0.07);
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 1.38rem;
+      line-height: 1;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: minmax(300px, 410px) minmax(0, 1fr);
+      gap: 18px;
+      max-width: 1500px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid rgba(182, 168, 148, 0.8);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 248, 0.9);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .piece-panel {
+      position: sticky;
+      top: 18px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-head h2,
+    .section-head h3 {
+      font-size: 1rem;
+      font-weight: 820;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--surface-2);
+      color: var(--muted);
+      padding: 0 11px;
+      font-size: 0.82rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .pill.complete {
+      border-color: rgba(15, 118, 110, 0.32);
+      background: var(--teal-soft);
+      color: #0b5f59;
+    }
+
+    .piece-tray,
+    .tray-drop {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tray-drop {
+      min-height: 180px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      background: rgba(248, 243, 234, 0.78);
+      padding: 10px;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .tray-drop.drop-target {
+      border-color: var(--teal);
+      background: rgba(223, 242, 239, 0.72);
+      transform: translateY(-1px);
+    }
+
+    .piece {
+      position: relative;
+      display: flex;
+      min-width: 0;
+      min-height: 74px;
+      grid-column: span var(--tray-span, 1);
+      align-items: flex-start;
+      flex-direction: column;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid rgba(32, 39, 36, 0.1);
+      border-left: 6px solid var(--accent);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.62), transparent 58%),
+        var(--fill);
+      color: var(--ink);
+      padding: 12px;
+      box-shadow: 0 10px 18px rgba(45, 38, 27, 0.1);
+      user-select: none;
+      cursor: grab;
+      touch-action: manipulation;
+      transition: transform 140ms ease, box-shadow 140ms ease, outline-color 140ms ease;
+    }
+
+    .piece[data-size="2"] {
+      --tray-span: 2;
+      min-height: 84px;
+    }
+
+    .piece:active {
+      cursor: grabbing;
+    }
+
+    .piece:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 24px rgba(45, 38, 27, 0.16);
+    }
+
+    .piece.selected {
+      outline: 3px solid rgba(15, 118, 110, 0.35);
+      outline-offset: 2px;
+    }
+
+    .piece.dragging {
+      opacity: 0.58;
+      transform: scale(0.98);
+    }
+
+    .piece-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      flex: 0 0 34px;
+      border: 1px solid color-mix(in srgb, var(--accent) 28%, #ffffff);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--accent);
+    }
+
+    .piece-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .piece-title {
+      display: block;
+      min-width: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-size: 1.04rem;
+      font-weight: 830;
+      line-height: 1.08;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    .piece[data-size="2"] .piece-title {
+      font-size: 1.12rem;
+    }
+
+    .return-piece {
+      position: absolute;
+      right: 8px;
+      bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(32, 39, 36, 0.14);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--accent);
+    }
+
+    .rooms-panel {
+      min-width: 0;
+    }
+
+    .rooms {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .room {
+      min-width: 0;
+      border: 1px solid rgba(182, 168, 148, 0.82);
+      border-radius: var(--radius);
+      background: rgba(255, 253, 248, 0.92);
+      padding: 13px;
+      transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+    }
+
+    .room.can-drop {
+      border-color: var(--teal);
+      background: rgba(223, 242, 239, 0.74);
+      transform: translateY(-1px);
+    }
+
+    .room.blocked {
+      border-color: var(--red);
+      animation: shake 220ms linear 1;
+    }
+
+    .room-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .room-head strong {
+      font-size: 1rem;
+      font-weight: 830;
+    }
+
+    .room-meter {
+      display: inline-grid;
+      grid-template-columns: repeat(4, 9px);
+      gap: 5px;
+      flex: 0 0 auto;
+    }
+
+    .room-meter span {
+      width: 9px;
+      height: 9px;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      background: transparent;
+    }
+
+    .room-meter span.filled {
+      border-color: var(--teal);
+      background: var(--teal);
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: stretch;
+      min-height: 98px;
+    }
+
+    .room-grid .piece {
+      --tray-span: var(--slots);
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 7px;
+      min-height: 92px;
+      padding: 8px 7px 8px 8px;
+    }
+
+    .room-grid .piece-icon {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 26px;
+    }
+
+    .room-grid .piece-icon svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .room-grid .piece-title {
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    .room-grid .piece[data-size="2"] .piece-title {
+      font-size: 1rem;
+    }
+
+    .room-grid .piece[data-size="1"] .piece-title {
+      font-size: 0.8rem;
+    }
+
+    .empty-slot {
+      min-height: 80px;
+      border: 1px dashed rgba(105, 115, 110, 0.48);
+      border-radius: var(--radius);
+      background: rgba(248, 243, 234, 0.6);
+    }
+
+    .room-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 720;
+    }
+
+    .toast {
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 20;
+      max-width: min(340px, calc(100vw - 44px));
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: white;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(14px);
+      transition: opacity 160ms ease, transform 160ms ease;
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-4px); }
+      75% { transform: translateX(4px); }
+    }
+
+    @media (max-width: 1050px) {
+      .topbar,
+      .board {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      .piece-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 16px;
+      }
+
+      .stats,
+      .rooms {
+        grid-template-columns: 1fr;
+      }
+
+      .piece-tray,
+      .tray-drop {
+        grid-template-columns: 1fr;
+      }
+
+      .piece,
+      .piece[data-size="2"] {
+        --tray-span: 1;
+      }
+
+      .room-grid {
+        grid-template-columns: repeat(4, minmax(46px, 1fr));
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .topbar {
+        gap: 12px;
+      }
+
+      .title-block {
+        align-items: flex-start;
+      }
+
+      .mark {
+        width: 56px;
+        min-width: 56px;
+      }
+
+      .toolbar {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .tool-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <div class="mark" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div>
+          <h1>Puzzle de habitaciones</h1>
+          <p>5 parejas, 4 personas, 4 habitaciones de 4 slots.</p>
+        </div>
+      </div>
+
+      <div class="toolbar" aria-label="Acciones">
+        <button class="tool-button primary" id="randomize" type="button" title="Reparto aleatorio">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 3h5v5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M4 20 21 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M21 16v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M15 15 21 21M4 4l5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          Azar
+        </button>
+        <button class="tool-button" id="clearBoard" type="button" title="Vaciar habitaciones">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 6h18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+            <path d="M8 6V4h8v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M6 6l1 14h10l1-14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+          Vaciar
+        </button>
+        <button class="tool-button" id="copyBoard" type="button" title="Copiar reparto">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="9" y="9" width="11" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          Copiar
+        </button>
+      </div>
+    </header>
+
+    <section class="stats" aria-live="polite">
+      <div class="stat"><span>Colocadas</span><strong id="placedSlots">0/14</strong></div>
+      <div class="stat"><span>Piezas fuera</span><strong id="outsidePieces">9</strong></div>
+      <div class="stat"><span>Plazas libres</span><strong id="freeSlots">16</strong></div>
+      <div class="stat"><span>Patrón</span><strong id="pattern">-</strong></div>
+    </section>
+
+    <main class="board">
+      <section class="panel piece-panel">
+        <div class="section-head">
+          <h2>Piezas fuera</h2>
+          <span class="pill" id="trayPill">9 piezas</span>
+        </div>
+        <div class="tray-drop" id="pieceTray" tabindex="0" aria-label="Piezas fuera"></div>
+      </section>
+
+      <section class="panel rooms-panel">
+        <div class="section-head">
+          <h2>Habitaciones</h2>
+          <span class="pill" id="statePill">Faltan 14 plazas</span>
+        </div>
+        <div class="rooms" id="rooms"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const ROOM_COUNT = 4;
+    const ROOM_CAPACITY = 4;
+    const TOTAL_PEOPLE = 14;
+    const TOTAL_ROOM_SLOTS = ROOM_COUNT * ROOM_CAPACITY;
+
+    const pieces = [
+      { id: "barbara-jose", kind: "Pareja", size: 2, title: "Bárbara & José", accent: "#0f766e", fill: "#dff2ef" },
+      { id: "isabel-eloy", kind: "Pareja", size: 2, title: "Isabel & Eloy", accent: "#b45309", fill: "#fff0df" },
+      { id: "lucia-dani", kind: "Pareja", size: 2, title: "Lucia & Dani", accent: "#2f5f9d", fill: "#e6efff" },
+      { id: "juancarlos-jcp", kind: "Pareja", size: 2, title: "JuanCarlos & JCP", accent: "#947000", fill: "#fff5ca" },
+      { id: "jaime-vicky", kind: "Pareja", size: 2, title: "Jaime y Vicky", accent: "#7c4d93", fill: "#f1e8ff" },
+      { id: "miko", kind: "Individual", size: 1, title: "Miko", accent: "#9f3a38", fill: "#ffe8e6" },
+      { id: "antonio", kind: "Individual", size: 1, title: "Antonio", accent: "#4e7d3b", fill: "#e8f3df" },
+      { id: "domi", kind: "Individual", size: 1, title: "Domi", accent: "#27727f", fill: "#e2f5f7" },
+      { id: "jose-angel", kind: "Individual", size: 1, title: "José Ángel", accent: "#8b5a2b", fill: "#f8eee4" }
+    ];
+
+    const pieceMap = new Map(pieces.map((piece) => [piece.id, piece]));
+    const initialOrder = pieces.map((piece) => piece.id);
+
+    const state = {
+      tray: initialOrder.slice(),
+      rooms: Array.from({ length: ROOM_COUNT }, () => []),
+      selectedPiece: null,
+      draggingPiece: null
+    };
+
+    const els = {
+      tray: document.getElementById("pieceTray"),
+      rooms: document.getElementById("rooms"),
+      placedSlots: document.getElementById("placedSlots"),
+      outsidePieces: document.getElementById("outsidePieces"),
+      freeSlots: document.getElementById("freeSlots"),
+      pattern: document.getElementById("pattern"),
+      trayPill: document.getElementById("trayPill"),
+      statePill: document.getElementById("statePill"),
+      randomize: document.getElementById("randomize"),
+      clearBoard: document.getElementById("clearBoard"),
+      copyBoard: document.getElementById("copyBoard"),
+      toast: document.getElementById("toast")
+    };
+
+    bindStaticEvents();
+    render();
+
+    function bindStaticEvents() {
+      els.randomize.addEventListener("click", randomizeLayout);
+      els.clearBoard.addEventListener("click", clearBoard);
+      els.copyBoard.addEventListener("click", copyLayout);
+
+      els.tray.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        els.tray.classList.add("drop-target");
+      });
+
+      els.tray.addEventListener("dragleave", (event) => {
+        if (!els.tray.contains(event.relatedTarget)) {
+          els.tray.classList.remove("drop-target");
+        }
+      });
+
+      els.tray.addEventListener("drop", (event) => {
+        event.preventDefault();
+        els.tray.classList.remove("drop-target");
+        const pieceId = event.dataTransfer.getData("text/plain");
+        if (pieceId) {
+          moveToTray(pieceId);
+        }
+      });
+
+      els.tray.addEventListener("click", (event) => {
+        if (event.target === els.tray && state.selectedPiece) {
+          moveToTray(state.selectedPiece);
+        }
+      });
+    }
+
+    function render() {
+      renderTray();
+      renderRooms();
+      renderStats();
+    }
+
+    function renderTray() {
+      els.tray.textContent = "";
+      state.tray.forEach((pieceId) => {
+        els.tray.append(createPiece(pieceId, { type: "tray" }));
+      });
+    }
+
+    function renderRooms() {
+      els.rooms.textContent = "";
+      state.rooms.forEach((roomPieces, roomIndex) => {
+        els.rooms.append(createRoom(roomPieces, roomIndex));
+      });
+    }
+
+    function createRoom(roomPieces, roomIndex) {
+      const used = roomUsage(roomIndex);
+      const room = createElement("section", "room");
+      room.dataset.roomIndex = String(roomIndex);
+      room.tabIndex = 0;
+      room.setAttribute("aria-label", `Habitación ${roomIndex + 1}, ${used} de ${ROOM_CAPACITY} slots ocupados`);
+
+      const head = createElement("div", "room-head");
+      head.append(createElement("strong", "", `Habitación ${roomIndex + 1}`), createMeter(used));
+
+      const grid = createElement("div", "room-grid");
+      roomPieces.forEach((pieceId) => {
+        grid.append(createPiece(pieceId, { type: "room", roomIndex }));
+      });
+
+      for (let index = 0; index < ROOM_CAPACITY - used; index += 1) {
+        const slot = createElement("div", "empty-slot");
+        slot.setAttribute("aria-hidden", "true");
+        grid.append(slot);
+      }
+
+      const footer = createElement("div", "room-footer");
+      footer.append(
+        createElement("span", "", `${used}/${ROOM_CAPACITY} slots`),
+        createElement("span", "", `${ROOM_CAPACITY - used} libres`)
+      );
+
+      room.addEventListener("dragover", (event) => {
+        const pieceId = state.draggingPiece || event.dataTransfer.getData("text/plain");
+        if (pieceId) {
+          event.preventDefault();
+          room.classList.toggle("can-drop", canPlaceInRoom(pieceId, roomIndex));
+        }
+      });
+
+      room.addEventListener("dragleave", (event) => {
+        if (!room.contains(event.relatedTarget)) {
+          room.classList.remove("can-drop");
+        }
+      });
+
+      room.addEventListener("drop", (event) => {
+        event.preventDefault();
+        room.classList.remove("can-drop");
+        const pieceId = event.dataTransfer.getData("text/plain");
+        if (pieceId) {
+          moveToRoom(pieceId, roomIndex);
+        }
+      });
+
+      room.addEventListener("click", (event) => {
+        if (event.target.closest(".piece")) {
+          return;
+        }
+        if (state.selectedPiece) {
+          moveToRoom(state.selectedPiece, roomIndex);
+        }
+      });
+
+      room.append(head, grid, footer);
+      return room;
+    }
+
+    function createPiece(pieceId, location) {
+      const piece = pieceMap.get(pieceId);
+      const node = createElement("div", "piece");
+      node.dataset.pieceId = piece.id;
+      node.dataset.size = String(piece.size);
+      node.draggable = true;
+      node.tabIndex = 0;
+      node.title = piece.title;
+      node.style.setProperty("--accent", piece.accent);
+      node.style.setProperty("--fill", piece.fill);
+      node.style.setProperty("--slots", String(piece.size));
+      node.setAttribute("role", "button");
+      node.setAttribute("aria-label", `${piece.kind}: ${piece.title}, ${piece.size} slots`);
+
+      if (state.selectedPiece === piece.id) {
+        node.classList.add("selected");
+      }
+
+      node.append(
+        createElement("span", "piece-title", piece.title),
+        createPieceIcon(piece)
+      );
+
+      if (location.type === "room") {
+        const returnButton = createElement("button", "return-piece");
+        returnButton.type = "button";
+        returnButton.title = "Sacar pieza";
+        returnButton.setAttribute("aria-label", `Sacar ${piece.title}`);
+        returnButton.innerHTML = "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M9 14 4 9l5-5' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path><path d='M4 9h10a6 6 0 0 1 0 12h-2' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'></path></svg>";
+        returnButton.addEventListener("click", (event) => {
+          event.stopPropagation();
+          moveToTray(piece.id);
+        });
+        node.append(returnButton);
+      }
+
+      node.addEventListener("dragstart", (event) => {
+        state.draggingPiece = piece.id;
+        node.classList.add("dragging");
+        event.dataTransfer.effectAllowed = "move";
+        event.dataTransfer.setData("text/plain", piece.id);
+      });
+
+      node.addEventListener("dragend", () => {
+        state.draggingPiece = null;
+        node.classList.remove("dragging");
+        document.querySelectorAll(".can-drop, .drop-target").forEach((target) => {
+          target.classList.remove("can-drop", "drop-target");
+        });
+      });
+
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        state.selectedPiece = state.selectedPiece === piece.id ? null : piece.id;
+        render();
+      });
+
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          state.selectedPiece = state.selectedPiece === piece.id ? null : piece.id;
+          render();
+        }
+      });
+
+      return node;
+    }
+
+    function createPieceIcon(piece) {
+      const icon = createElement("span", "piece-icon");
+      icon.setAttribute("aria-hidden", "true");
+      icon.innerHTML = piece.size === 2
+        ? "<svg viewBox='0 0 24 24'><path d='M8.2 11a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z' fill='none' stroke='currentColor' stroke-width='2'></path><path d='M15.8 11a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z' fill='none' stroke='currentColor' stroke-width='2'></path><path d='M3.5 19.5c.6-3 2.4-4.5 5-4.5s4.4 1.5 5 4.5' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'></path><path d='M10.5 19.5c.6-3 2.4-4.5 5-4.5s4.4 1.5 5 4.5' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'></path></svg>"
+        : "<svg viewBox='0 0 24 24'><path d='M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z' fill='none' stroke='currentColor' stroke-width='2'></path><path d='M4.5 20c.8-4 3.3-6 7.5-6s6.7 2 7.5 6' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round'></path></svg>";
+      return icon;
+    }
+
+    function createMeter(used) {
+      const meter = createElement("span", "room-meter");
+      meter.setAttribute("aria-hidden", "true");
+      for (let index = 0; index < ROOM_CAPACITY; index += 1) {
+        const dot = document.createElement("span");
+        if (index < used) {
+          dot.className = "filled";
+        }
+        meter.append(dot);
+      }
+      return meter;
+    }
+
+    function renderStats() {
+      const placedSlots = state.rooms.reduce((sum, _room, roomIndex) => sum + roomUsage(roomIndex), 0);
+      const remainingPeople = TOTAL_PEOPLE - placedSlots;
+      const freeRoomSlots = TOTAL_ROOM_SLOTS - placedSlots;
+      const pattern = state.rooms.map((_room, roomIndex) => roomUsage(roomIndex)).sort((a, b) => b - a).join("-");
+      const complete = state.tray.length === 0;
+
+      els.placedSlots.textContent = `${placedSlots}/${TOTAL_PEOPLE}`;
+      els.outsidePieces.textContent = String(state.tray.length);
+      els.freeSlots.textContent = String(freeRoomSlots);
+      els.pattern.textContent = complete ? pattern : "-";
+      els.trayPill.textContent = `${state.tray.length} pieza${state.tray.length === 1 ? "" : "s"}`;
+      els.statePill.textContent = complete ? `Completo · ${freeRoomSlots} libres` : `Faltan ${remainingPeople} plaza${remainingPeople === 1 ? "" : "s"}`;
+      els.statePill.classList.toggle("complete", complete);
+    }
+
+    function roomUsage(roomIndex) {
+      return state.rooms[roomIndex].reduce((sum, pieceId) => sum + pieceMap.get(pieceId).size, 0);
+    }
+
+    function findLocation(pieceId) {
+      if (state.tray.includes(pieceId)) {
+        return { type: "tray" };
+      }
+      for (let roomIndex = 0; roomIndex < ROOM_COUNT; roomIndex += 1) {
+        if (state.rooms[roomIndex].includes(pieceId)) {
+          return { type: "room", roomIndex };
+        }
+      }
+      return null;
+    }
+
+    function canPlaceInRoom(pieceId, roomIndex) {
+      const piece = pieceMap.get(pieceId);
+      const location = findLocation(pieceId);
+      let used = roomUsage(roomIndex);
+      if (location && location.type === "room" && location.roomIndex === roomIndex) {
+        used -= piece.size;
+      }
+      return used + piece.size <= ROOM_CAPACITY;
+    }
+
+    function moveToRoom(pieceId, roomIndex) {
+      if (!canPlaceInRoom(pieceId, roomIndex)) {
+        flashRoom(roomIndex);
+        showToast("No caben esos slots en esa habitación.");
+        return false;
+      }
+
+      removePiece(pieceId);
+      state.rooms[roomIndex].push(pieceId);
+      state.selectedPiece = null;
+      render();
+      return true;
+    }
+
+    function moveToTray(pieceId) {
+      removePiece(pieceId);
+      state.tray.push(pieceId);
+      state.selectedPiece = null;
+      render();
+    }
+
+    function removePiece(pieceId) {
+      state.tray = state.tray.filter((id) => id !== pieceId);
+      state.rooms = state.rooms.map((room) => room.filter((id) => id !== pieceId));
+    }
+
+    function clearBoard() {
+      state.tray = initialOrder.slice();
+      state.rooms = Array.from({ length: ROOM_COUNT }, () => []);
+      state.selectedPiece = null;
+      render();
+    }
+
+    function randomizeLayout() {
+      const solution = createRandomSolution();
+      if (!solution) {
+        showToast("No se pudo generar reparto.");
+        return;
+      }
+      state.tray = [];
+      state.rooms = solution;
+      state.selectedPiece = null;
+      render();
+      showToast("Reparto aleatorio listo.");
+    }
+
+    function createRandomSolution() {
+      for (let attempt = 0; attempt < 80; attempt += 1) {
+        const order = shuffle(initialOrder.slice());
+        const rooms = Array.from({ length: ROOM_COUNT }, () => []);
+        const usage = Array.from({ length: ROOM_COUNT }, () => 0);
+
+        if (placeNext(0, order, rooms, usage)) {
+          return rooms;
+        }
+      }
+      return null;
+    }
+
+    function placeNext(index, order, rooms, usage) {
+      if (index === order.length) {
+        return true;
+      }
+
+      const pieceId = order[index];
+      const piece = pieceMap.get(pieceId);
+      const roomOrder = shuffle([0, 1, 2, 3]);
+
+      for (const roomIndex of roomOrder) {
+        if (usage[roomIndex] + piece.size <= ROOM_CAPACITY) {
+          usage[roomIndex] += piece.size;
+          rooms[roomIndex].push(pieceId);
+          if (placeNext(index + 1, order, rooms, usage)) {
+            return true;
+          }
+          rooms[roomIndex].pop();
+          usage[roomIndex] -= piece.size;
+        }
+      }
+
+      return false;
+    }
+
+    function shuffle(items) {
+      for (let index = items.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [items[index], items[swapIndex]] = [items[swapIndex], items[index]];
+      }
+      return items;
+    }
+
+    function copyLayout() {
+      const lines = ["Reparto de habitaciones"];
+      state.rooms.forEach((room, roomIndex) => {
+        const used = roomUsage(roomIndex);
+        const names = room.map((pieceId) => pieceMap.get(pieceId).title);
+        const free = ROOM_CAPACITY - used;
+        lines.push(`Habitación ${roomIndex + 1} (${used}/${ROOM_CAPACITY}): ${names.length ? names.join("; ") : "vacía"}${free ? `; ${free} libre${free === 1 ? "" : "s"}` : ""}`);
+      });
+
+      if (state.tray.length) {
+        lines.push(`Fuera: ${state.tray.map((pieceId) => pieceMap.get(pieceId).title).join("; ")}`);
+      }
+
+      copyText(lines.join("\n")).then(() => showToast("Reparto copiado."));
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-999px";
+      document.body.append(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+    }
+
+    function flashRoom(roomIndex) {
+      const room = document.querySelector(`[data-room-index="${roomIndex}"]`);
+      if (!room) {
+        return;
+      }
+      room.classList.remove("blocked");
+      window.requestAnimationFrame(() => {
+        room.classList.add("blocked");
+        window.setTimeout(() => room.classList.remove("blocked"), 260);
+      });
+    }
+
+    function showToast(message) {
+      els.toast.textContent = message;
+      els.toast.classList.add("visible");
+      window.clearTimeout(showToast.timeoutId);
+      showToast.timeoutId = window.setTimeout(() => {
+        els.toast.classList.remove("visible");
+      }, 2200);
+    }
+
+    function createElement(tag, className = "", text = "") {
+      const element = document.createElement(tag);
+      if (className) {
+        element.className = className;
+      }
+      if (text) {
+        element.textContent = text;
+      }
+      return element;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+
